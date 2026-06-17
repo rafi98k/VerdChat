@@ -38,7 +38,9 @@ html, body {
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.6;
-  overflow: hidden;
+  overflow: auto;
+  scrollbar-width: thin; /* Options: auto, thin, none */
+  scrollbar-color: black var(--green-600); /* thumb-color track-color */
 }
 
 /* ── Background grid ───────────────────────────────── */

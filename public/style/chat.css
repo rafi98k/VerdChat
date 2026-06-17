@@ -230,11 +230,16 @@ html, body {
   border-color: var(--green-600);
   color: var(--text-primary);
   font-family: var(--font-body);
+  cursor: pointer;
+}
+.create-room:hover{
+  background-color: var(--green-900);
 }
 .create-room .p{
   position: relative;
   left :1px;
 }
+
 /* ── Profile + dropdown ─────────────────────────────── */
 .profile {
   display: flex;
@@ -510,4 +515,75 @@ html, body {
     margin: 0 12px;
     padding: 4px 10px;
     border-radius: 12px;
+}
+
+/* ── Modal (create room form) ──────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow:
+    0 0 0 1px rgba(74,222,128,0.04),
+    0 24px 60px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(74,222,128,0.08);
+  transform: translateY(12px);
+  transition: transform 0.2s;
+}
+.modal-overlay.open .modal-card {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.modal-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+.modal-close:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }

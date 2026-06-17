@@ -39,9 +39,9 @@ const sendMessage = async (req, res) => {
     const roomId = Number(req.params.roomId);
     const sender = req.user.id;
     const content = req.body.content;
-    
+    let message;
     try {
-        const message = await prisma.message.create({
+         message = await prisma.message.create({
             data: {
                 userId: sender,
                 roomId: roomId,
@@ -61,6 +61,19 @@ const sendMessage = async (req, res) => {
 const createRoom = async(req,res)=>{
     const userId = req.user.id;
     const roomName = req.body.roomName ;
+    const room = await prisma.room.create({
+        data:{
+            name : roomName,
+        }
+    });
+    const RoomMember = await prisma.RoomMember.create({
+        data:{
+            userId:userId,
+            roomId: room.id,
+            isAdmin:true,
+        },
+    });
+     res.status(201).json(room);
 }
 
 

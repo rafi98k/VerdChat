@@ -30,6 +30,49 @@ document.addEventListener('click', (e) => {
     dropdown.classList.remove('open');
   }
 });
+
+/*----------------Create room form---------------------------------------------------*/
+const modalOverlay = document.getElementById('modalOverlay');
+const createRoomBtn = document.getElementById("createRoom");
+const modalClose = document.getElementById('modalClose');
+const createRoomForm = document.getElementById('createRoomForm');
+
+createRoomBtn.addEventListener('click',(e)=>{
+  modalOverlay.classList.add('open');
+});
+
+modalClose.addEventListener('click',(e)=>{
+  modalOverlay.classList.remove('open');
+});
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+});
+
+createRoomForm.addEventListener('submit',async(e)=>{
+    const roomName =  document.getElementById('roomName').value.trim();
+    if (!roomName) return;
+    try{
+    const res = await fetch('api/rooms/create',{
+      method :"POST",
+      headers: { 'Content-Type': 'application/json' },
+      credentials : "include",
+      body : JSON.stringify({roomName}),
+    });
+    if(!res.ok){
+        console.log('failed to create room');
+      }
+    const room = await res.json();
+    document.getElementById('roomList').appendChild(renderRoomDiv(room));
+    modalOverlay.classList.remove('open');
+    createRoomForm.reset();
+  } catch(err){
+    console.log(err);
+  }
+
+
+});
+
+//Get the chat area div to render chatrooms
 const chatArea = document.getElementById('chatArea');
 
 //render client rooms on the sidebar
@@ -147,6 +190,7 @@ function NewDaySeparator(date) {
 
 //Fetch the api for all messages for a room and load them for user
 async function loadMessages(roomId) {
+
   const messagesContainer = document.getElementById("messages");
   const target = `/api/rooms/${roomId}/messages`;
   try{
@@ -156,6 +200,11 @@ async function loadMessages(roomId) {
 
     const data = await res.json();
     const fragment = document.createDocumentFragment();
+    /*message sending form sets prevDate to current date whenever submitted*/
+    /*which results in comparison below returning true leading to today's messages'*/
+    /*not being distinguished from yesterday's (only when this function is executed)*/
+    //so it must be reset to get clean delimiters . 
+    prevDate = null;
     data.messages.forEach((msg,i) =>{
       const date = new Date(msg.createdAt).toLocaleDateString(undefined, {
           weekday: "long",
