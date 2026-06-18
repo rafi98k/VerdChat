@@ -17,7 +17,7 @@ async function init() {
   }
 }
 
-
+const socket = new WebSocket('ws://localhost:8000');
 
 
 profilePic.addEventListener('click', (e) => {
@@ -252,6 +252,13 @@ async function loadRooms(){
 async function start() {
     await init();
     await loadRooms();
+    socket.addEventListener('open', (event) => {
+        console.log('Connected to the Express WebSocket server');
+        
+        // Send an initial message to the server
+        const payload = { type: 'greet', message: 'Hello Server!' };
+        socket.send(JSON.stringify(payload));
+    });
 }
 
 start();

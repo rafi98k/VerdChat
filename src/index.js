@@ -3,16 +3,19 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const {createServer} = require("http");
-const {Server} = require('socket.io');
 const fs = require('fs');
 const path = require('path');
+const WebSocket = require('ws');
+
 
 const app = express();
-const httpServer = createServer(app);
 
 
 //Middleware
-app.use(cors());
+app.use(cors({
+  origin : process.env.CLIENT_URL,
+  credentials : true,
+}));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -24,23 +27,8 @@ const authRouter = require("./routes/auth.js");
 const roomsRouter = require('./routes/rooms');
 
 
-
-//Controllers
-
-
-
-
 //static files
 app.use(express.static(path.join(__dirname, '../public')));
-
-const io = new Server(httpServer, {
-  cors:{
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials :true,
-  },
-});
-
-
 
 
 
@@ -50,20 +38,29 @@ app.use('/',pagesRouter);
 app.use('/api/auth',authRouter);
 app.use('/api/rooms',roomsRouter);
 
+//WebSocket
+const wss = new WebSocket.Server({port : 8000});
+console.log('WebSocket server is running on ws://localhost:8000');
 
-//socket.io
-io.on('connection', (socket)=>{
-  console.log('Client connected', socket.id);
+wss.on('connection',(ws)=>{
+  console.log('new client has joined');
 
-  socket.on('disconnect', () => {
-    console.log("client Disconnected" , socket.id);
+  ws.send("welcome to the WebSocket server");
+
+  ws.on('message',()=>{
+    console.log(`recieved ${message}`);
+
+    ws.send(`server recieved your ${message} `);
   });
 });
 
+wss.on('close',()=>{
+  console.log('Client disconnected');
+});
 
 
 const PORT = process.env.PORT;
-httpServer.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on porttt ${PORT}`);
 });
 
