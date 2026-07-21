@@ -45,17 +45,37 @@ console.log('WebSocket server is running on ws://localhost:8000');
 wss.on('connection',(ws)=>{
   console.log('new client has joined');
 
-  ws.send("welcome to the WebSocket server");
+  //ws.send("welcome to the WebSocket server");
 
-  ws.on('message',()=>{
-    console.log(`recieved ${message}`);
+  ws.on('message',(message)=>{
+    const data = JSON.parse(message.toString());
+    switch (data.type) {
+        case "joined-room":
+            break;
 
-    ws.send(`server recieved your ${message} `);
+        case "left-room":
+            // leave room
+            break;
+
+        case "send-message":
+        wss.clients.forEach((client) => {
+          if (client!== ws && client.readyState === WebSocket.OPEN) {
+          
+            client.send(JSON.stringify(data));
+          }
+        });
+            
+
+            break;
+
+        default:
+            console.log("Unknown message type:", data.type);
+    }
+
   });
-});
-
-wss.on('close',()=>{
-  console.log('Client disconnected');
+  ws.on('close',()=>{
+    console.log('Client disconnected');
+  });
 });
 
 

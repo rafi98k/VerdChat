@@ -586,8 +586,9 @@ html, body {
 #roomName{
   background-color: inherit;
   color: white;
-  border-color: var(--green-400);
+  border-color: var(--green-600);
   border-radius: 5px;
+  border-style: solid;
   padding: 3px;
 }
 .modal-form .btn-submit{
@@ -595,7 +596,15 @@ html, body {
   display: inline-flex;
   align-items: center;      /* Vertically centers the text */
   justify-content: center; 
+  background-color: var(--surface-2);
+  color: var(--text-primary);
+  padding: 2px;
+  border-color: var(--green-600);
+  border-style: solid;
   cursor: pointer;
+}
+.modal-form .btn-submit:hover{
+  background-color: var(--green-900);
 }
 .modal-form .btn-text{
   align-self: center;

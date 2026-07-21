@@ -117,7 +117,8 @@
       data = await res.json();
       if(!res.ok){
         invalidmessage = document.getElementById('invalid-message');
-        invalidmessage.style.display = 'block'; 
+        invalidmessage.style.display = 'block';
+        btn.classList.remove('loading');
       }
       else{
         window.location.href="/";

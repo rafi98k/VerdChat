@@ -48,7 +48,7 @@ const sendMessage = async (req, res) => {
                 content: content,
             },
             include: {
-                user: { select: { username: true } },
+                user: { select: { username: true } },//we include username to render it in the message info
             },
         });
     } catch (err) {
@@ -59,13 +59,19 @@ const sendMessage = async (req, res) => {
 };
 
 const createRoom = async(req,res)=>{
+    //We retrieve the user from the user object in the request,(created by our authenticate middleware
+    //which decordes the JWT)
     const userId = req.user.id;
+    //The room name is in the request's body
     const roomName = req.body.roomName ;
+    //We create the room instance
     const room = await prisma.room.create({
         data:{
             name : roomName,
         }
     });
+    //We then use its ID along with the user's to grant membership, as admin because 
+    //the user created the room .
     const RoomMember = await prisma.RoomMember.create({
         data:{
             userId:userId,

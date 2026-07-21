@@ -1,10 +1,47 @@
 const profile = document.getElementById('profile');
 const profilePic = document.getElementById('profilePic');
 const dropdown = document.getElementById('dropdown');
-
-let currentUserId ;
-let currentUsername ;
+let currentUserId = null;
+let currentUsername = null ;
+let currentRoom = null;
 let prevDate = null;
+
+//Connect socket to the server
+const socket = new WebSocket('ws://localhost:8000');
+socket.onopen = () => {
+  console.log ('Connected to server , finally');
+};
+
+socket.addEventListener("message", (msg) => {
+    const data = JSON.parse(msg.data);
+
+    switch (data.type) {
+        case "send-message":
+          const date = new Date(data.createdAt).toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+          });
+          const messagesContainer =document.getElementById("messages");
+                    
+          if(date !== prevDate)
+              messagesContainer.appendChild(NewDaySeparator(date));
+          if(currentRoom){
+            if (data.roomId === currentRoom) {
+                    messagesContainer.appendChild(loadMessage(data));
+            }
+          }
+            break;
+
+        case "joined-room":
+            console.log("Joined room");
+            break;
+    }
+});
+
+
+//set placeholder pfp and get user identity  
 async function init() {
   const res = await fetch('/api/auth/me', { credentials: 'include' });
   if (res.ok) {
@@ -17,7 +54,6 @@ async function init() {
   }
 }
 
-const socket = new WebSocket('ws://localhost:8000');
 
 
 profilePic.addEventListener('click', (e) => {
@@ -72,11 +108,10 @@ createRoomForm.addEventListener('submit',async(e)=>{
 
 });
 
-//Get the chat area div to render chatrooms
-const chatArea = document.getElementById('chatArea');
+
 
 //render client rooms on the sidebar
-function renderRoomDiv (room){
+ function renderRoomDiv (room){
     const div = document.createElement("div");
     div.className = "room-item";
     div.dataset.room=  room.room.name;
@@ -87,13 +122,29 @@ function renderRoomDiv (room){
           <p class="room-preview">No messages yet</p>`;
 
     div.addEventListener('click', () => {
-    document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
-    div.classList.add('active');
-    loadRoom(room);
-  });
+
+      socket.send(JSON.stringify({
+        type :"left-room",
+        roomId:currentRoom,
+      }));
+      document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
+      div.classList.add('active');
+
+      socket.send(JSON.stringify({
+        type :"joined-room",
+        roomId:room.roomId,
+      }));
+      currentRoom = room.roomId;
+
+       loadRoom(room);
+      //load real-time messages
+
+    });
 
     return div;
 }
+//Get the chat area div to render chatrooms
+const chatArea = document.getElementById('chatArea');
 //Load an actual chat-room
 function loadRoom(room){
     chatArea.innerHTML = `
@@ -116,8 +167,8 @@ function loadRoom(room){
   //send message 
   
 
-  const form = chatArea.querySelector('.message-form');
-  form.addEventListener('submit',async (e)=>{
+  const messageForm = chatArea.querySelector('.message-form');
+  messageForm.addEventListener('submit',async (e)=>{
     e.preventDefault();
     const input = chatArea.querySelector('.message-input');
     const content = input.value.trim();
@@ -134,7 +185,7 @@ function loadRoom(room){
           console.log("failed to send");
           return;
         }
-      const msg = await res.json();
+       msg = await res.json();
       const sendingDate =  new Date(msg.createdAt).toLocaleDateString(undefined, {
           weekday: "long",
           month: "long",
@@ -145,6 +196,13 @@ function loadRoom(room){
           document.getElementById('messages').appendChild(NewDaySeparator(sendingDate));
           prevDate = sendingDate;
         }
+      //specify message type for Wss to handle it as a user message
+      msg.type ="send-message";
+      //load it with relevant fields , to render messages real time wihout unnecessary
+      //fields returned from created DB record (i.e userId, roomId)
+      msg.username=currentUsername; 
+      socket.send(JSON.stringify(msg));
+
       document.getElementById('messages').appendChild(loadMessage(msg));
       input.value = '';
     }
@@ -190,7 +248,6 @@ function NewDaySeparator(date) {
 
 //Fetch the api for all messages for a room and load them for user
 async function loadMessages(roomId) {
-
   const messagesContainer = document.getElementById("messages");
   const target = `/api/rooms/${roomId}/messages`;
   try{
@@ -205,7 +262,7 @@ async function loadMessages(roomId) {
     /*not being distinguished from yesterday's (only when this function is executed)*/
     //so it must be reset to get clean delimiters . 
     prevDate = null;
-    data.messages.forEach((msg,i) =>{
+    data.messages.forEach((msg) =>{
       const date = new Date(msg.createdAt).toLocaleDateString(undefined, {
           weekday: "long",
           month: "long",
@@ -252,18 +309,11 @@ async function loadRooms(){
 async function start() {
     await init();
     await loadRooms();
-    socket.addEventListener('open', (event) => {
-        console.log('Connected to the Express WebSocket server');
-        
-        // Send an initial message to the server
-        const payload = { type: 'greet', message: 'Hello Server!' };
-        socket.send(JSON.stringify(payload));
-    });
-}
+
+    }
+
 
 start();
-
-
 
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', async () => {
