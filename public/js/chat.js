@@ -11,33 +11,26 @@ const socket = new WebSocket('ws://localhost:8000');
 socket.onopen = () => {
   console.log ('Connected to server , finally');
 };
-
+//recieve real-time messages
 socket.addEventListener("message", (msg) => {
     const data = JSON.parse(msg.data);
 
-    switch (data.type) {
-        case "send-message":
-          const date = new Date(data.createdAt).toLocaleDateString(undefined, {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-          });
-          const messagesContainer =document.getElementById("messages");
-                    
-          if(date !== prevDate)
-              messagesContainer.appendChild(NewDaySeparator(date));
-          if(currentRoom){
-            if (data.roomId === currentRoom) {
-                    messagesContainer.appendChild(loadMessage(data));
-            }
-          }
-            break;
-
-        case "joined-room":
-            console.log("Joined room");
-            break;
+    const date = new Date(data.createdAt).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+    });
+    const messagesContainer =document.getElementById("messages");
+              
+    if(date !== prevDate)
+        messagesContainer.appendChild(NewDaySeparator(date));
+    if(currentRoom){
+      if (data.roomId === currentRoom) {
+              messagesContainer.appendChild(loadMessage(data));
+      }
     }
+
 });
 
 
@@ -67,82 +60,36 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/*----------------Create room form---------------------------------------------------*/
-const modalOverlay = document.getElementById('modalOverlay');
-const createRoomBtn = document.getElementById("createRoom");
-const modalClose = document.getElementById('modalClose');
-const createRoomForm = document.getElementById('createRoomForm');
-
-createRoomBtn.addEventListener('click',(e)=>{
-  modalOverlay.classList.add('open');
-});
-
-modalClose.addEventListener('click',(e)=>{
-  modalOverlay.classList.remove('open');
-});
-modalOverlay.addEventListener('click', (e) => {
-  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
-});
-
-createRoomForm.addEventListener('submit',async(e)=>{
-    const roomName =  document.getElementById('roomName').value.trim();
-    if (!roomName) return;
-    try{
-    const res = await fetch('api/rooms/create',{
-      method :"POST",
-      headers: { 'Content-Type': 'application/json' },
-      credentials : "include",
-      body : JSON.stringify({roomName}),
-    });
-    if(!res.ok){
-        console.log('failed to create room');
-      }
-    const room = await res.json();
-    document.getElementById('roomList').appendChild(renderRoomDiv(room));
-    modalOverlay.classList.remove('open');
-    createRoomForm.reset();
-  } catch(err){
-    console.log(err);
-  }
-
-
-});
 
 
 
 //render client rooms on the sidebar
- function renderRoomDiv (room){
-    const div = document.createElement("div");
-    div.className = "room-item";
-    div.dataset.room=  room.room.name;
-    div.innerHTML = `
-          <div class="room-avatar">${room.room.name.charAt(0).toUpperCase()}</div>
-          <div class="room-info">
-          <p class="room-name">${room.room.name}</p>
-          <p class="room-preview">No messages yet</p>`;
+function renderRoomDiv (room){
+  const div = document.createElement("div");
+  div.className = "room-item";
+  div.dataset.room=  room.room.name;
+  div.innerHTML = `
+        <div class="room-avatar">${room.room.name.charAt(0).toUpperCase()}</div>
+        <div class="room-info">
+        <p class="room-name">${room.room.name}</p>
+        <p class="room-preview">No messages yet</p>`;
 
-    div.addEventListener('click', () => {
+  div.addEventListener('click', () => {
 
-      socket.send(JSON.stringify({
-        type :"left-room",
-        roomId:currentRoom,
-      }));
-      document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
-      div.classList.add('active');
 
-      socket.send(JSON.stringify({
-        type :"joined-room",
-        roomId:room.roomId,
-      }));
-      currentRoom = room.roomId;
+    document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
+    div.classList.add('active');
 
-       loadRoom(room);
-      //load real-time messages
+    currentRoom= room.roomId;
 
-    });
+     loadRoom(room);
+    //load real-time messages
 
-    return div;
+  });
+
+  return div;
 }
+
 //Get the chat area div to render chatrooms
 const chatArea = document.getElementById('chatArea');
 //Load an actual chat-room
@@ -196,13 +143,8 @@ function loadRoom(room){
           document.getElementById('messages').appendChild(NewDaySeparator(sendingDate));
           prevDate = sendingDate;
         }
-      //specify message type for Wss to handle it as a user message
-      msg.type ="send-message";
-      //load it with relevant fields , to render messages real time wihout unnecessary
-      //fields returned from created DB record (i.e userId, roomId)
-      msg.username=currentUsername; 
-      socket.send(JSON.stringify(msg));
 
+      socket.send(JSON.stringify(msg));
       document.getElementById('messages').appendChild(loadMessage(msg));
       input.value = '';
     }
@@ -304,6 +246,80 @@ async function loadRooms(){
   }
 }
 
+/*----------------Create room form---------------------------------------------------*/
+const CRoomModalOverlay = document.getElementById('CRoomModalOverlay');
+const createRoomBtn = document.getElementById("createRoom");
+const modalClose = document.getElementById('modalClose');
+const createRoomForm = document.getElementById('createRoomForm');
+
+createRoomBtn.addEventListener('click',(e)=>{
+  CRoomModalOverlay.classList.add('open');
+});
+
+modalClose.addEventListener('click',(e)=>{
+  CRoomModalOverlay.classList.remove('open');
+});
+CRoomModalOverlay.addEventListener('click', (e) => {
+  if (e.target === CRoomModalOverlay) CRoomModalOverlay.classList.remove('open');
+});
+
+createRoomForm.addEventListener('submit',async(e)=>{
+    const roomName =  document.getElementById('roomName').value.trim();
+    if (!roomName) return;
+    try{
+    const res = await fetch('api/rooms/create',{
+      method :"POST",
+      headers: { 'Content-Type': 'application/json' },
+      credentials : "include",
+      body : JSON.stringify({roomName}),
+    });
+    if(!res.ok){
+        console.log('failed to create room');
+      }
+    const room = await res.json();
+    document.getElementById('roomList').appendChild(renderRoomDiv(room));
+    CRoomModalOverlay.classList.remove('open');
+    createRoomForm.reset();
+  } catch(err){
+    console.log(err);
+  }
+
+
+});
+
+const FRoomModalOverlay = document.getElementById('FRoomModalOverlay');
+const findRoomBtn = document.getElementById("findRoom");
+const fModalClose = document.getElementById('fModalClose');
+const findRoomForm = document.getElementById('findRoomForm');
+
+findRoomBtn.addEventListener('click',(e)=>{
+  FRoomModalOverlay.classList.add('open');
+});
+
+fModalClose.addEventListener('click',(e)=>{
+  FRoomModalOverlay.classList.remove('open');
+});
+FRoomModalOverlay.addEventListener('click', (e) => {
+  if (e.target === FRoomModalOverlay) FRoomModalOverlay.classList.remove('open');
+});
+
+findRoomForm.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const roomId = document.getElementById('roomId').value;
+  try{
+    //search for the room through the API
+    const res = await fetch(`api/rooms/${roomId}/find`);
+    const room = await res.json();
+    //hide the form
+    document.getElementById('findRoomForm').style.display = 'none';
+
+    const resultDiv= document.getElementById('searchResult');
+
+  }
+  catch(err){
+    console.log(err);
+  }
+})
 
 
 async function start() {

@@ -49,33 +49,19 @@ wss.on('connection',(ws)=>{
 
   ws.on('message',(message)=>{
     const data = JSON.parse(message.toString());
-    switch (data.type) {
-        case "joined-room":
-            break;
 
-        case "left-room":
-            // leave room
-            break;
-
-        case "send-message":
-        wss.clients.forEach((client) => {
-          if (client!== ws && client.readyState === WebSocket.OPEN) {
-          
-            client.send(JSON.stringify(data));
-          }
-        });
-            
-
-            break;
-
-        default:
-            console.log("Unknown message type:", data.type);
-    }
-
+    wss.clients.forEach((client) => {
+      if (client!== ws && client.readyState === WebSocket.OPEN) {
+        console.log(client);
+        client.send(JSON.stringify(data));
+      }
+    });
+    
   });
   ws.on('close',()=>{
     console.log('Client disconnected');
   });
+  
 });
 
 

@@ -18,27 +18,43 @@ model User {
   password  String
   createdAt DateTime @default(now())
 
-  messages  Message[]
-  members   RoomMember[]
+  messages     Message[]
+  members      RoomMember[]
+  roomRequests RoomRequest[]
 }
 
 model Room {
-  id        Int   @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String   @unique
   createdAt DateTime @default(now())
+  password  String?
 
-  messages  Message[]
-  members   RoomMember[]
+  messages     Message[]
+  members      RoomMember[]
+  roomRequests RoomRequest[]
 }
 
 model RoomMember {
-  id       Int @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   userId   String
   roomId   Int
-  isAdmin  Boolean @default(false)
+  isAdmin  Boolean  @default(false)
+  joinedAt DateTime @default(now())
 
-  user     User @relation(fields: [userId], references: [id])
-  room     Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@unique([userId, roomId])
+}
+
+model RoomRequest {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  roomId      Int
+  requestedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
 
   @@unique([userId, roomId])
 }
@@ -48,9 +64,9 @@ model Message {
   content   String
   createdAt DateTime @default(now())
 
-  userId    String
-  roomId    Int
+  userId String
+  roomId Int
 
-  user      User @relation(fields: [userId], references: [id])
-  room      Room @relation(fields: [roomId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
 }

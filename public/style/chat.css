@@ -98,8 +98,9 @@ html, body {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin; /* Options: auto, thin, none */
+  scrollbar-color: black var(--green-600); /* thumb-color track-color */
 }
-
 .sidebar-header {
   height: 64px;
   display: flex;
@@ -235,6 +236,25 @@ html, body {
 .create-room:hover{
   background-color: var(--green-900);
 }
+.find-room{
+  position: relative;
+  display: inline-flex;
+  align-items: center;      
+  justify-content: center; 
+  background: var(--surface-2);
+  border: 4px solid var(--border);
+  padding: 8px;
+  border-radius: 15px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5); 
+  border-color: var(--green-600);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.find-room:hover{
+  background-color: var(--green-900);
+}
+
 
 
 /* ── Profile + dropdown ─────────────────────────────── */
@@ -608,4 +628,29 @@ html, body {
 }
 .modal-form .btn-text{
   align-self: center;
+}
+
+.fmodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.fmodal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+#roomId{
+  background-color: inherit;
+  color: white;
+  border-color: var(--green-600);
+  border-radius: 5px;
+  border-style: solid;
+  padding: 3px;
 }
