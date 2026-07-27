@@ -236,13 +236,13 @@ html, body {
 .create-room:hover{
   background-color: var(--green-900);
 }
-.find-room{
-  position: relative;
+.search-btn{
+  margin-left:auto;
   display: inline-flex;
   align-items: center;      
   justify-content: center; 
   background: var(--surface-2);
-  border: 4px solid var(--border);
+  border: 2px solid var(--border);
   padding: 8px;
   border-radius: 15px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.5); 
@@ -251,8 +251,56 @@ html, body {
   font-family: var(--font-body);
   cursor: pointer;
 }
-.find-room:hover{
+.search-btn:hover{
   background-color: var(--green-900);
+}
+
+/* ── Sidebar search overlay ─────────────────────────── */
+.search-overlay {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.search-overlay.active {
+  display: flex;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--green-600);
+  border-radius: 0;
+  padding: 6px 4px;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  caret-color: var(--green-400);
+}
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+.search-input:focus {
+  border-bottom-color: var(--green-400);
+}
+
+.search-cancel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.search-cancel:hover {
+  color: var(--text-primary);
 }
 
 
@@ -628,29 +676,4 @@ html, body {
 }
 .modal-form .btn-text{
   align-self: center;
-}
-
-.fmodal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.fmodal-overlay.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-#roomId{
-  background-color: inherit;
-  color: white;
-  border-color: var(--green-600);
-  border-radius: 5px;
-  border-style: solid;
-  padding: 3px;
 }

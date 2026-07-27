@@ -287,23 +287,49 @@ createRoomForm.addEventListener('submit',async(e)=>{
 
 });
 
-const FRoomModalOverlay = document.getElementById('FRoomModalOverlay');
-const findRoomBtn = document.getElementById("findRoom");
-const fModalClose = document.getElementById('fModalClose');
-const findRoomForm = document.getElementById('findRoomForm');
+/*Find room logic*/
+const searchBtn = document.getElementById("searchBtn");
+const sidebarBrand = document.querySelector('.sidebar-header .brand');
+const searchOverlay = document.getElementById('searchOverlay');
 
-findRoomBtn.addEventListener('click',(e)=>{
-  FRoomModalOverlay.classList.add('open');
+searchBtn.addEventListener('click', () => {
+  sidebarBrand.style.display = 'none';
+  searchBtn.style.display = 'none';
+  searchOverlay.classList.add('active');
+  document.getElementById('searchInput').focus();
 });
 
-fModalClose.addEventListener('click',(e)=>{
-  FRoomModalOverlay.classList.remove('open');
-});
-FRoomModalOverlay.addEventListener('click', (e) => {
-  if (e.target === FRoomModalOverlay) FRoomModalOverlay.classList.remove('open');
+document.getElementById('searchCancel').addEventListener('click', () => {
+  sidebarBrand.style.display = 'flex';
+  searchBtn.style.display = 'inline-flex';
+  searchOverlay.classList.remove('active');
+  document.getElementById('searchInput').value = '';
 });
 
-findRoomForm.addEventListener('submit',async(e)=>{
+searchRooms = async(roomName)=>{
+    if (!roomName) {
+    await loadRooms(); // restore original list
+    return;}
+  const res = await fetch(`/api/rooms/search?q=${roomName}`, { credentials: 'include' });
+  if (!res.ok) return;
+  const rooms = await res.json();
+  const roomListDiv = document.getElementById("roomList");
+  roomListDiv.replaceChildren(); // Safely clears all child nodes and text
+  rooms.forEach(r => roomListDiv.appendChild(renderRoomDiv(r)));
+
+  }
+
+//Debounce search , at every brief pause send a query to the backend
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    searchRooms(e.target.value.trim());
+  }, 1000);
+});
+
+
+/*findRoomForm.addEventListener('submit',async(e)=>{
   e.preventDefault();
   const roomId = document.getElementById('roomId').value;
   try{
@@ -319,7 +345,7 @@ findRoomForm.addEventListener('submit',async(e)=>{
   catch(err){
     console.log(err);
   }
-})
+})*/
 
 
 async function start() {
