@@ -67,12 +67,16 @@ document.addEventListener('click', (e) => {
 function renderRoomDiv (room){
   const div = document.createElement("div");
   div.className = "room-item";
-  div.dataset.room=  room.room.name;
+  div.dataset.room=  room.name;
+  const previewMessage = room.latestMessage
+    ? `<b>${room.latestMessage.user.username}: ${room.latestMessage.content}</b>`
+    : 'No messages yet';
+
   div.innerHTML = `
-        <div class="room-avatar">${room.room.name.charAt(0).toUpperCase()}</div>
-        <div class="room-info">
-        <p class="room-name">${room.room.name}</p>
-        <p class="room-preview">No messages yet</p>`;
+  <div class="room-avatar">${room.name.charAt(0).toUpperCase()}</div>
+  <div class="room-info">
+  <p class="room-name">${room.name}</p>
+  <p class="room-preview">${previewMessage}</p>`;
 
   div.addEventListener('click', () => {
 
@@ -96,11 +100,11 @@ const chatArea = document.getElementById('chatArea');
 function loadRoom(room){
     chatArea.innerHTML = `
     <div class="chat-header">
-      <span class="chat-room-name">#${room.room.name}</span>
+      <span class="chat-room-name">#${room.name}</span>
     </div>
     <div class="messages" id="messages"></div>
     <form class="message-form">
-      <input type="text" placeholder="Message #${room.room.name}" class="message-input" />
+      <input type="text" placeholder="Message #${room.name}" class="message-input" />
       <button type="submit" class="send-btn" id="send">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="22" y1="2" x2="11" y2="13"/>
@@ -109,7 +113,7 @@ function loadRoom(room){
       </button>
     </form>
   `;
-  loadMessages(room.roomId);
+  loadMessages(room.id);
 
   //send message 
   

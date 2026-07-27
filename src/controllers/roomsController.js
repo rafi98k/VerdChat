@@ -2,7 +2,7 @@ const prisma = require("../config/prisma");
 
 const getRooms = async (req, res) => {
     userId = req.params.userId;
-    const rooms = await prisma.RoomMember.findMany({
+    const memeberships = await prisma.RoomMember.findMany({
         where: { userId: userId },
 
         select: {
@@ -10,11 +10,29 @@ const getRooms = async (req, res) => {
             isAdmin: true,
             room: {
                 select: {
+                    id: true,
                     name: true,
+                    messages :{
+                        orderBy:{createdAt:"desc"},
+                        take :1,
+                        select:{
+                            content:true,
+                            user :{select:{username:true}},
+                            },
+                        },
+                    },
                 },
             },
-        },
-    });
+        });
+            //Get the latest message of each room and add it to the room object
+        //for room preview message
+    const rooms = memeberships.map(m=>({
+        id : m.room.id,
+        name : m.room.name,
+        isAdmin: m.isAdmin,
+        latestMessage : m.room.messages[0] || null,
+    })
+    );
 
     return res.json({ rooms });
 };
