@@ -100,19 +100,24 @@ const createRoom = async(req,res)=>{
      res.status(201).json(room);
 }
 //Search for a room
-const findRoom = async(req,res)=>{
-    const roomId = Number(req.params.roomId);
-    const room = await prisma.room.findUnique({
-        where :{id:roomId},
+const searchRooms = async(req,res)=>{
+
+    const {q} = req.query;
+    const rooms = await prisma.room.findMany({
+        where :{
+            name:{
+                contains : q,
+                mode:'insensitive',
+            },
+
+        },
         select:{
             id:true,
             name:true,
-        }
+        },
     });
-    let r ={};
-    r.roomId = room.id;
-    r.room = room;
-    return res.json(r);
+    
+    return res.json(rooms);
 }
 
-module.exports = { getRooms,createRoom,findRoom ,getMessages, sendMessage };
+module.exports = { getRooms,createRoom,searchRooms ,getMessages, sendMessage };
