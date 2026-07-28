@@ -329,7 +329,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     searchRooms(e.target.value.trim());
-  }, 1000);
+  }, 500);
 });
 
 

@@ -103,7 +103,7 @@ const createRoom = async(req,res)=>{
 const searchRooms = async(req,res)=>{
 
     const {q} = req.query;
-    const rooms = await prisma.room.findMany({
+    const result = await prisma.room.findMany({
         where :{
             name:{
                 contains : q,
@@ -114,9 +114,22 @@ const searchRooms = async(req,res)=>{
         select:{
             id:true,
             name:true,
+            messages :{
+                orderBy:{createdAt:"desc"},
+                take :1,
+                select:{
+                    content:true,
+                    user :{select:{username:true}},
+                },            
+            },
         },
     });
-    
+    const rooms = result.map(r=>({
+        id : r.id,
+        name : r.name,
+        latestMessage : r.messages[0],
+        })
+    );
     return res.json(rooms);
 }
 
